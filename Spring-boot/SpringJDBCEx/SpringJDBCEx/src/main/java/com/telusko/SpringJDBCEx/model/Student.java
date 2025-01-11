@@ -45,4 +45,6 @@ public class Student {
     private String name;
     private int marks;
 
+    public void setName(int marks) {
+    }
 }
