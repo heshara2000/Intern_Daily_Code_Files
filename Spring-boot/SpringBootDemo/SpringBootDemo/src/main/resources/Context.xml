@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+
+
+    <bean id="alien" class="com.telusko.SpringBootDemo.Allien" autowire="byType">
+
+        <property name="age" value="21"/>
+        <!--<property name="com" ref="com2"/>   -->
+        <property name="com" >
+            <!-- Inner Bean -->
+            <bean id="com1" class="com.telusko.Laptop" primary="true">
+            </bean>
+        </property>
+
+    </bean>
+
+    <bean id="lap" class="com.telusko.SpringBootDemo.Laptop">
+    </bean>
+    <bean id="desktop" class="com.telusko.SpringBootDemo.Desktop">
+    </bean>
+</beans>
