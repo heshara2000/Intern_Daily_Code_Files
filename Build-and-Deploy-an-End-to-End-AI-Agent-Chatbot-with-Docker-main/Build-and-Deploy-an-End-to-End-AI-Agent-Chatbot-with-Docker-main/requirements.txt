@@ -1,0 +1,8 @@
+
+fastapi
+pydantic
+langchain
+langgraph   # If this is a custom package, ensure it's accessible via PyPI or local file.
+langchain_groq  # Double-check if this package exists or provide installation details.
+uvicorn
+streamlit

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #fff;
+        }
+        #score {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #appleImg {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <img id="appleImg" src="data:image/png;base64,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">
+    <script src="game.js"></script>
+</body>
+</html>
