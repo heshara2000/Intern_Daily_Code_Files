@@ -7,6 +7,8 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
+	"sync"
 
 	"github.com/gorilla/mux"
 )
@@ -85,6 +87,72 @@ func deleteBook(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(books)
 }
 
+// Function to perform search on a subset of books
+func searchSubset(booksSubset []Book, query string, resultsChan chan<- Book, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for _, item := range booksSubset {
+		if strings.Contains(strings.ToLower(item.Title), strings.ToLower(query)) ||
+			strings.Contains(strings.ToLower(item.Description), strings.ToLower(query)) {
+			resultsChan <- item // Send matching books to channel
+		}
+	}
+}
+
+
+
+func searchBooks(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	query := r.URL.Query().Get("q")
+
+	// if query == "" {
+	// 	json.NewDecoder(w).Encode([]Book{})
+	// 	return
+	// }
+	if query == "" {
+        http.Error(w, "Query parameter 'q' is missing", http.StatusBadRequest)
+        return
+    }
+
+	resultsChan := make(chan Book,len(books))
+	var wg sync.WaitGroup
+
+	// Split the books slice into 4 subsets
+	numGoroutines := 4
+	chunkSize := (len(books) + numGoroutines - 1) / numGoroutines
+
+	// Split books into chunks and search in parallel
+	for i := 0; i < len(books); i += chunkSize {
+		end := i + chunkSize
+		if end > len(books) {
+			end = len(books)
+		}
+		wg.Add(1)
+		go searchSubset(books[i:end], query, resultsChan, &wg)
+	}
+
+	// Close the channel once all goroutines are done
+	go func() {
+		wg.Wait()
+		close(resultsChan)
+	}()
+
+
+	// Collect results from the channel
+	var result []Book
+	for book := range resultsChan {
+		result = append(result, book)
+	}
+
+	// for _, item := range books {
+	// 	if strings.Contains(strings.ToLower(item.Title), strings.ToLower(query)) || 
+    //        strings.Contains(strings.ToLower(item.Description), strings.ToLower(query)) {
+    //         result = append(result, item)
+    //     }
+	// }
+	json.NewEncoder(w).Encode(result)
+}
+
+
 func main() {
 	r := mux.NewRouter()
 
@@ -93,7 +161,7 @@ func main() {
 		BookID:          "b763a45d-7f1e-2da4-47de-19344ab23870",
 		AuthorID:        "d2a91f78-c153-488d-7b23-2f55bbb78a92",
 		PublisherID:     "1e9a19d9-a321-4689-a25b-cbd8478ed506",
-		Title:           "1984",
+		Title:           "Game of the Thrones",
 		PublicationDate: "1949-06-08",
 		ISBN:            "978-0-452-28423-4",
 		Pages:           328,
@@ -122,6 +190,8 @@ func main() {
 	r.HandleFunc("/books", createBook).Methods("POST")
 	r.HandleFunc("/books/{id}", updateBook).Methods("PUT")
 	r.HandleFunc("/books/{id}", deleteBook).Methods("DELETE")
+	r.HandleFunc("/books/search", searchBooks).Methods("GET")
+
 
 	fmt.Printf("Starting server at port 8080\n")
 	log.Fatal(http.ListenAndServe(":8080", r))

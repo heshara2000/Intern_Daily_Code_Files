@@ -1,0 +1,49 @@
+# Book Search API
+
+This is a Go-based Book Search API that allows users to search through a collection of books using optimized search techniques. The search process leverages Go's concurrency primitives such as Goroutines and Channels to enhance performance, especially when dealing with large datasets.
+
+## Features
+- Add, update, delete, and retrieve books from the collection.
+- Search books by title and description.
+- Optimized search implementation using Goroutines and Channels.
+
+## Prerequisites
+- Go installed on your system. You can download it from [Go's official website](https://golang.org/dl/).
+
+## Running the API
+1. Clone the repository or download the project files.
+
+2. Navigate to the project directory and run the following command to build and run the server:
+
+```bash
+    go run main.go
+```
+
+3. The API will start on `http://localhost:8080`. You can now interact with the API using tools like Postman or curl.
+
+### Endpoints
+- `GET /books`: Retrieve all books.
+- `GET /books/{id}`: Retrieve a specific book by its ID.
+- `POST /books`: Add a new book to the collection.
+- `PUT /books/{id}`: Update an existing book.
+- `DELETE /books/{id}`: Delete a book by its ID.
+- `GET /books/search?q={query}`: Search books by title or description (with concurrency optimizations).
+
+## Example Search Query
+To search for books containing the word 'fantasy', send a GET request to:
+```
+http://localhost:8080/books/search?q=fantasy
+```
+
+The results will include all books where the title or description contains 'fantasy'.
+
+## Additional Information
+- The search process is parallelized using Go's concurrency. Each search task is split into smaller subsets of the book collection, processed concurrently using goroutines, and the results are merged using channels.
+
+## Dependencies
+- `github.com/gorilla/mux`: A powerful URL router and dispatcher for Go. Install this dependency by running:
+```bash
+    go get -u github.com/gorilla/mux
+```
+
+
