@@ -46,4 +46,20 @@ The results will include all books where the title or description contains 'fant
     go get -u github.com/gorilla/mux
 ```
 
+```
+docker build -t main .
+```
+
+
+# Run the Docker Container
+```
+docker run -p 8080:8080 main 
+```
+
+### To test the Test function run the terminal following code
+
+```
+go test
+```
+
 

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	//"testing"
 
 	"github.com/gorilla/mux"
 )
@@ -183,6 +184,20 @@ func main() {
 		Description:     "A romantic novel that explores issues of marriage, morality, and the societal expectations of 19th century England.",
 		Price:           9.99,
 		Quantity:        30,
+	})
+
+	books = append(books, Book{
+		BookID:          "b763ab45-7f1e-2da4-47de-19344ab23870",
+		AuthorID:        "d2a91f78-c153-488d-7b23-2f55bbb78a92",
+		PublisherID:     "1e9a19d9-a321-4689-a25b-cbd8478ed506",
+		Title:           "Game of the Thrones part b",
+		PublicationDate: "1949-05-08",
+		ISBN:            "975-0-452-28423-4",
+		Pages:           90,
+		Genre:           "Dystopiansss",
+		Description:     "A dystopisssan novel set in a totalitarian society ruled by Big Brother, exploring themes of surveillance and censorship.",
+		Price:           190.50,
+		Quantity:        750,
 	})
 
 	r.HandleFunc("/books", getBooks).Methods("GET")
