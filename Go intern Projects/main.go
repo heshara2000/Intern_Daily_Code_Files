@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
 	//"testing"
 
 	"github.com/gorilla/mux"
@@ -32,7 +33,32 @@ var books []Book
 
 func getBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(books)
+
+	//get pagination parameters
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+
+	//convert parameters into int....default value is 10 limit and 0 for offset
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		limit = 10
+	}
+
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		offset = 0
+	}
+
+	if offset > len(books) {
+		offset = len(books)
+	}
+	end := offset + limit
+	if end > len(books) {
+		end = len(books)
+	}
+
+	paginatedBooks := books[offset:end]
+	json.NewEncoder(w).Encode(paginatedBooks)
 }
 
 func getBook(w http.ResponseWriter, r *http.Request) {
@@ -99,8 +125,6 @@ func searchSubset(booksSubset []Book, query string, resultsChan chan<- Book, wg 
 	}
 }
 
-
-
 func searchBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	query := r.URL.Query().Get("q")
@@ -110,11 +134,11 @@ func searchBooks(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 	if query == "" {
-        http.Error(w, "Query parameter 'q' is missing", http.StatusBadRequest)
-        return
-    }
+		http.Error(w, "Query parameter 'q' is missing", http.StatusBadRequest)
+		return
+	}
 
-	resultsChan := make(chan Book,len(books))
+	resultsChan := make(chan Book, len(books))
 	var wg sync.WaitGroup
 
 	// Split the books slice into 4 subsets
@@ -137,7 +161,6 @@ func searchBooks(w http.ResponseWriter, r *http.Request) {
 		close(resultsChan)
 	}()
 
-
 	// Collect results from the channel
 	var result []Book
 	for book := range resultsChan {
@@ -145,14 +168,13 @@ func searchBooks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// for _, item := range books {
-	// 	if strings.Contains(strings.ToLower(item.Title), strings.ToLower(query)) || 
-    //        strings.Contains(strings.ToLower(item.Description), strings.ToLower(query)) {
-    //         result = append(result, item)
-    //     }
+	// 	if strings.Contains(strings.ToLower(item.Title), strings.ToLower(query)) ||
+	//        strings.Contains(strings.ToLower(item.Description), strings.ToLower(query)) {
+	//         result = append(result, item)
+	//     }
 	// }
 	json.NewEncoder(w).Encode(result)
 }
-
 
 func main() {
 	r := mux.NewRouter()
@@ -200,13 +222,53 @@ func main() {
 		Quantity:        750,
 	})
 
+	books = append(books, Book{
+		BookID:          "c234d45f-9c8e-4ghh-57cd-63712ec38291",
+		AuthorID:        "c9f81a78-e223-49h8-9c34-7d54cdc98a73",
+		PublisherID:     "5c7a39d9-d128-4838-b15a-bdcb5652ed607",
+		Title:           "Pride and Prejudice testing 333",
+		PublicationDate: "1813-01-30",
+		ISBN:            "978-0-19-28078968-5",
+		Pages:           500,
+		Genre:           "Romance",
+		Description:     "A flower novel that explores issues of marriage, morality, and the societal expectations of 19th century England.",
+		Price:           12.99,
+		Quantity:        40,
+	})
+
+	books = append(books, Book{
+		BookID:          "c225hgfh-9c8e-4dbf-57cd-63712ec38291",
+		AuthorID:        "c87hfa78-e223-498d-9c34-7d54cdc98a73",
+		PublisherID:     "5c7dfb459-d128-4838-b15a-bde8172ed607",
+		Title:           "Robbing Hood",
+		PublicationDate: "2000-01-28",
+		ISBN:            "978-0-19-8990238-5",
+		Pages:           800,
+		Genre:           "Romance",
+		Description:     "A curious that explores issues of marriage, morality, and the societal expectations of 19th century England.",
+		Price:           89.99,
+		Quantity:        40,
+	})
+	books = append(books, Book{
+		BookID:          "c234d45f-9c8e-4dbf-57cd-4555c38291",
+		AuthorID:        "c9f81eees3-e223-498d-9c34-7d54cdc98a73",
+		PublisherID:     "5c7a33rg-d128-4838-b15a-bde8172ed607",
+		Title:           "Harry Potter",
+		PublicationDate: "1343-01-28",
+		ISBN:            "9678-0-19-280238-5",
+		Pages:           900,
+		Genre:           "Horror",
+		Description:     "A Horror novel that explores issues of marriage, morality, and the societal expectations of 19th century England.",
+		Price:           44.99,
+		Quantity:        302,
+	})
+
 	r.HandleFunc("/books", getBooks).Methods("GET")
 	r.HandleFunc("/books/{id}", getBook).Methods("GET")
 	r.HandleFunc("/books", createBook).Methods("POST")
 	r.HandleFunc("/books/{id}", updateBook).Methods("PUT")
 	r.HandleFunc("/books/{id}", deleteBook).Methods("DELETE")
 	r.HandleFunc("/books/search", searchBooks).Methods("GET")
-
 
 	fmt.Printf("Starting server at port 8080\n")
 	log.Fatal(http.ListenAndServe(":8080", r))
