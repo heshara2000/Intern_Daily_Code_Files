@@ -1,0 +1,23 @@
+// {
+//     "compilerOptions": {
+//         "baseUrl": ".",
+//         "paths": {
+//             "@/components/*": [
+//                 "components/*"
+//             ],
+//             "@/mocks/*": [
+//                 "__mocks__/*"
+//             ]
+//         }
+//     }
+// }
+{
+    "compilerOptions": {
+      "baseUrl": ".",
+      "paths": {
+        "@/components/*": ["components/*"],
+        "@/mocks/*": ["__mocks__/*"]
+      }
+    }
+  }
+  
